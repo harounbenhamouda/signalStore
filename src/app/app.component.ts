@@ -13,7 +13,7 @@ import { SelectionService } from './services/selection.service';
   template: `
     <div class="app-container">
       <header class="app-header">
-        <h1>Selection Manager</h1>
+        <h1>Interactive Box Selection </h1>
         <p>Click on boxes to select options</p>
       </header>
 

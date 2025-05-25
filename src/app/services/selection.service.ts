@@ -66,7 +66,7 @@ export class SelectionService {
     this.selectedOptionsSubject.next(updated);
 
     this.saveToStorage(updated);
-    const nextIndex = this.findNextAvailableIndex(currentIndex);
+    const nextIndex = this.findNextIndex(currentIndex);
     this.selectedIndexSubject.next(nextIndex);
   }
 
@@ -77,22 +77,14 @@ export class SelectionService {
     this.removeFromStorage();
   }
 
-  /**
-   * Find the next available index for selection.
-   * If all slots are filled, stay at the last index.
-   */
-  private findNextAvailableIndex(currentIndex: number): number {
-    const options = this.selectedOptionsSubject.value;
-    for (let i = currentIndex + 1; i < SelectionService.MAX_SELECTIONS; i++) {
-      if (!options[i]) {
-        return i;
-      }
+  private findNextIndex(currentIndex: number): number {
+  
+    if (currentIndex >= SelectionService.LAST_INDEX) {
+      return SelectionService.LAST_INDEX;
     }
-    
-   
-    return currentIndex;
-  }
 
+    return currentIndex + 1;
+  }
   private saveToStorage(options: (Option | null)[]): void {
     try {
       localStorage.setItem(SelectionService.STORAGE_KEY, JSON.stringify(options));
