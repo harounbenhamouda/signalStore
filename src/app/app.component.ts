@@ -1,19 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, Signal } from '@angular/core';
 
 import { BoxComponent } from './box/box.component';
 import { OptionSelectorComponent } from './option-selector/option-selector.component';
 import { Option } from './models/option.model';
 import { map, Observable, Subject, takeUntil } from 'rxjs';
 import { SelectionService } from './services/selection.service';
+import { SelectionStore } from './store/selection.store';
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, BoxComponent, OptionSelectorComponent],
   template: `
-    <div class="app-container">
+     <div class="app-container">
       <header class="app-header">
-        <h1>Interactive Box Selection </h1>
+        <h1>Interactive Box Selection</h1>
         <p>Click on boxes to select options</p>
       </header>
 
@@ -21,8 +22,8 @@ import { SelectionService } from './services/selection.service';
         @for (i of boxes; track i) {
           <app-box
             [index]="i"
-            [option]="(selectedOptions$ | async)?.[i] ?? null"
-            [selected]="i === (selectedIndex$ | async)"
+            [option]="selectedOptions()[i]"
+            [selected]="i === selectedIndex()"
           ></app-box>
         }
       </div>
@@ -30,7 +31,7 @@ import { SelectionService } from './services/selection.service';
       <div class="footer">
         <div class="total-section">
           <span class="total-label">Total Value:</span>
-          <span class="total-value">{{ totalValue$ | async }}</span>
+          <span class="total-value">{{ totalValue() }}</span>
         </div>
         <button 
           class="clear-button" 
@@ -41,23 +42,21 @@ import { SelectionService } from './services/selection.service';
         </button>
       </div>
 
-      @let selectedIndex = selectedIndex$ | async;
-      @if (selectedIndex !== null && selectedIndex >= 0) {
+      @if (selectedIndex() >= 0) {
         <app-option-selector></app-option-selector>
       }
     </div>
   `,
   styles: [`
     .app-container {
-      max-width: 1200px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 1rem;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     .app-header {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
     }
 
     .app-header h1 {
@@ -72,7 +71,7 @@ import { SelectionService } from './services/selection.service';
 
     .box-grid { 
       display: grid; 
-      grid-template-columns: repeat(5, 1fr); 
+      grid-template-columns: repeat(10, 1fr); 
       gap: 1rem; 
       margin-bottom: 2rem; 
     }
@@ -93,7 +92,7 @@ import { SelectionService } from './services/selection.service';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 2rem;
+      margin-top: 1rem;
       padding: 1rem;
       background: #f8f9fa;
       border-radius: 8px;
@@ -137,27 +136,16 @@ import { SelectionService } from './services/selection.service';
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent implements OnDestroy {
-  private destroy$ = new Subject<void>();
-  
-  protected readonly boxes = Array.from({ length: SelectionService.MAX_SELECTIONS }, (_, i) => i);
-  protected readonly selectedOptions$: Observable<(Option | null)[]>;
-  protected readonly selectedIndex$: Observable<number>;
-  protected readonly totalValue$: Observable<number>;
+export class AppComponent {
+private readonly store = inject(SelectionStore);
 
-  constructor(private selectionService: SelectionService) {
-   
-    this.selectedOptions$ = this.selectionService.selectedOptions$;
-    this.selectedIndex$ = this.selectionService.selectedIndex$;
-    this.totalValue$ = this.selectionService.totalValue$;
-  }
+  protected readonly boxes = Array.from({ length: 10 }, (_, i) => i);
+
+  protected readonly selectedOptions: Signal<(Option | null)[]> = this.store.selectedOptions;
+  protected readonly selectedIndex: Signal<number> = this.store.selectedIndex;
+  protected readonly totalValue: Signal<number> = this.store.totalValue;
 
   protected clearAllSelections(): void {
-    this.selectionService.clearSelections();
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.store.clearSelections();
   }
 }

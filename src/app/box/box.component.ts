@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { SelectionService } from '../services/selection.service';
 import { Option } from '../models/option.model';
+import { SelectionStore } from '../store/selection.store';
 
 @Component({
   selector: 'app-box',
@@ -85,9 +86,9 @@ export class BoxComponent {
   @Input() option: Option | null = null;
   @Input() selected = false;
 
-  constructor(private selectionService: SelectionService) {}
+  private readonly store = inject(SelectionStore);
 
-  public handleBoxClick() {
-    this.selectionService.selectBox(this.index);
+   protected handleBoxClick(): void {
+    this.store.selectBox(this.index);
   }
 }

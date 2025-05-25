@@ -1,9 +1,10 @@
 import { AsyncPipe, CommonModule, NgFor, TitleCasePipe } from "@angular/common";
 import { SelectionService } from "../services/selection.service";
 import { Category, Option } from "../models/option.model";
-import { ChangeDetectionStrategy, Component, inject, Input, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, Input, OnInit, Signal } from "@angular/core";
 import { map } from "rxjs/operators";
 import { combineLatest, Observable } from "rxjs";
+import { SelectionStore } from "../store/selection.store";
 
 interface SelectionState {
   selectedOptions: (Option | null)[];
@@ -15,14 +16,14 @@ interface SelectionState {
   standalone: true,
   imports: [AsyncPipe, CommonModule, TitleCasePipe],
   template: `
-    @if (selectionState$ | async; as selectionState) {
+    @if (selectionState(); as selectionState) {
       <div class="selector-container">
         <div class="selector-header">
           <h2>Select Option for Box {{ selectionState.selectedIndex + 1 }}</h2>
           <p class="instruction">Choose from the categories below:</p>
         </div>
         
-        @for (category of categorizedOptions; track category.category) {
+        @for (category of categorizedOptions(); track category.category) {
           <section class="category-section">
             <h3>{{ category.category | titlecase }}</h3>
             <div class="options-grid">
@@ -125,27 +126,19 @@ interface SelectionState {
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class OptionSelectorComponent implements OnInit {
-  protected categorizedOptions: { category: Category; options: Option[] }[] = [];
-  protected selectionState$!: Observable<SelectionState>;
+export class OptionSelectorComponent  {
+    private store = inject(SelectionStore);
+  
+protected selectionState: Signal<SelectionState> = computed(() => ({
+  selectedOptions: this.store.selectedOptions(),
+  selectedIndex: this.store.selectedIndex()
+}));
 
-  constructor(private selectionService: SelectionService) {}
+protected categorizedOptions =
+  this.store.categorizedOptions;
 
-  public ngOnInit(): void {
-    this.selectionState$ = combineLatest([
-      this.selectionService.selectedOptions$,
-      this.selectionService.selectedIndex$
-    ]).pipe(
-      map(([selectedOptions, selectedIndex]) => ({
-        selectedOptions,
-        selectedIndex
-      }))
-    );
-
-    this.categorizedOptions = this.selectionService.categoriesWithOptions;
-  }
-
+  
   protected selectOption(option: Option): void {
-    this.selectionService.setOptionForCurrentBox(option);
+    this.store.setOptionForCurrentBox(option);
   }
 }
