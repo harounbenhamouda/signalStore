@@ -73,7 +73,7 @@ import { SelectionStore } from './store/selection.store';
       display: grid; 
       grid-template-columns: repeat(10, 1fr); 
       gap: 1rem; 
-      margin-bottom: 2rem; 
+      margin-bottom: 1rem; 
     }
 
     @media (max-width: 768px) {
