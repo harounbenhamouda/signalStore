@@ -4,8 +4,6 @@ import { ChangeDetectionStrategy, Component, inject, OnDestroy, Signal } from '@
 import { BoxComponent } from './box/box.component';
 import { OptionSelectorComponent } from './option-selector/option-selector.component';
 import { Option } from './models/option.model';
-import { map, Observable, Subject, takeUntil } from 'rxjs';
-import { SelectionService } from './services/selection.service';
 import { SelectionStore } from './store/selection.store';
 @Component({
   selector: 'app-root',
@@ -22,8 +20,6 @@ import { SelectionStore } from './store/selection.store';
         @for (i of boxes; track i) {
           <app-box
             [index]="i"
-            [option]="selectedOptions()[i]"
-            [selected]="i === selectedIndex()"
           ></app-box>
         }
       </div>
@@ -31,7 +27,7 @@ import { SelectionStore } from './store/selection.store';
       <div class="footer">
         <div class="total-section">
           <span class="total-label">Total Value:</span>
-          <span class="total-value">{{ totalValue() }}</span>
+          <span class="total-value">{{ totalValue()  | number: '1.1-1'}}</span>
         </div>
         <button 
           class="clear-button" 

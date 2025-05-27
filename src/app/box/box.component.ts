@@ -1,7 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
-import { SelectionService } from '../services/selection.service';
-import { Option } from '../models/option.model';
+import { ChangeDetectionStrategy, Component, computed, inject, Input } from '@angular/core';
 import { SelectionStore } from '../store/selection.store';
 
 @Component({
@@ -11,10 +9,10 @@ import { SelectionStore } from '../store/selection.store';
   template: `
     <div
       class="box"
-      [class.selected]="selected"
+      [class.selected]="selected()"
       (click)="handleBoxClick()"
-    >
-      @if (option; as selectedOption) {
+    > 
+      @if (option(); as selectedOption) {
         <div class="option-content">
           <span class="option-label">{{ selectedOption.label }}</span>
           <br>
@@ -83,12 +81,20 @@ import { SelectionStore } from '../store/selection.store';
 })
 export class BoxComponent {
   @Input() index: number = 0;
-  @Input() option: Option | null = null;
-  @Input() selected = false;
-
   private readonly store = inject(SelectionStore);
+ readonly selectedIndex = this.store.selectedIndex;
+  readonly selectedOptions = this.store.selectedOptions;
+
+
+  readonly option = computed(() => this.selectedOptions()[this.index]);
+  readonly selected = computed(() => {
+    return this.selectedIndex() === this.index;
+  });
+
 
    protected handleBoxClick(): void {
+
+    this
     this.store.selectBox(this.index);
   }
 }
