@@ -1,5 +1,4 @@
 import { AsyncPipe, CommonModule, NgFor, TitleCasePipe } from "@angular/common";
-import { SelectionService } from "../services/selection.service";
 import { Category, Option } from "../models/option.model";
 import { ChangeDetectionStrategy, Component, computed, inject, Signal } from "@angular/core";
 import { SelectionStore } from "../store/selection.store";
